@@ -45,10 +45,9 @@ after_initialize do
   allow_public_user_custom_field(Maskid::INDEX_FIELD)
 
   # Posts: the tier next to the poster's name (the JS poster icon reads it).
-  add_to_serializer(:post, :maskid_tier) do
+  add_to_serializer(:post, :maskid_tier, include_condition: -> { SiteSetting.maskid_enabled }) do
     object.user&.custom_fields&.[](Maskid::TIER_FIELD)
   end
-  add_to_serializer(:post, :include_maskid_tier?) { SiteSetting.maskid_enabled }
 
   # The signed-in member's own status (the profile connector reads it).
   add_to_serializer(:current_user, :maskid_tier) do

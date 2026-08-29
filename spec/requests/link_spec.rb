@@ -22,7 +22,8 @@ RSpec.describe Maskid::LinkController do
     req = JSON.parse(Base64.urlsafe_decode64(c + "=" * ((4 - c.length % 4) % 4)))
     expect(req["rp_user_id"]).to eq("u_#{user.id}")
     expect(req["redirect"]).to end_with("/maskid/return")
-    expect(req["webhook"]).to end_with("/maskid/webhook")
+    # webhook only on https forums (test base_url is http)
+    expect(req["webhook"]).to be_nil
     expect(req["nonce"]).to be_present
   end
 

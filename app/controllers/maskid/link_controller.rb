@@ -17,9 +17,12 @@ module ::Maskid
         rp_user_id: "u_#{current_user.id}",
         nonce: nonce,
         redirect: "#{base}/maskid/return",
-        webhook: "#{base}/maskid/webhook",
         expires: (Time.now + Attestation::NONCE_TTL).to_i,
       }
+      # Mask.ID only POSTs webhooks to public https hosts; a local or http
+      # forum works on the redirect alone (the member's browser carries the
+      # signed response back).
+      request[:webhook] = "#{base}/maskid/webhook" if base.start_with?("https://")
       c = Base64.urlsafe_encode64(request.to_json, padding: false)
       redirect_to "#{SiteSetting.maskid_host.chomp("/")}/verify-trust?c=#{c}", allow_other_host: true
     end
