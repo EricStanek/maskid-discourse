@@ -1,0 +1,21 @@
+en:
+  site_settings:
+    maskid_enabled: "Enable the Mask.ID plugin (badge, poster icon, trust-level floor by tier)."
+    maskid_host: "The Mask.ID app that verifies members (leave as is unless you run a test instance)."
+    maskid_key_id: "The Mask.ID platform key id to pin (production: cdde5c8d68dbb162). Responses signed by any other key are rejected."
+    maskid_public_key: "Optional: the base64url Ed25519 public key. Leave blank to fetch it once from <host>/.well-known/maskid-attest-key and pin it."
+    maskid_trust_level_trusted: "Minimum trust level granted to a member whose Mask.ID tier is Trusted."
+    maskid_trust_level_building: "Minimum trust level granted to a member whose Mask.ID tier is Building."
+    maskid_trust_level_low: "Minimum trust level granted to a member whose Mask.ID tier is Low."
+    maskid_refresh_days: "How often to re-read a linked member's current tier from Mask.ID. A revoked or deleted Mask.ID unlinks on the next refresh."
+    maskid_show_poster_icon: "Show the Mask.ID tier icon next to a linked member's name on their posts."
+  maskid:
+    linked: "Your Mask.ID is linked (tier: %{tier})."
+    failed: "Mask.ID verification didn't go through (%{reason}). Try again from your profile."
+    badges:
+      trusted:
+        description: "Linked a Mask.ID in the Trusted tier — an established, reputation-backed identity."
+      building:
+        description: "Linked a Mask.ID in the Building tier — a real identity with a growing track record."
+      low:
+        description: "Linked a Mask.ID in the Low tier — a verified identity, early in its history."

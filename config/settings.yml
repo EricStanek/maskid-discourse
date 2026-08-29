@@ -1,0 +1,38 @@
+maskid:
+  maskid_enabled:
+    default: false
+    client: true
+  maskid_host:
+    default: "https://app.mask.id"
+    client: true
+    description: "The Mask.ID app that verifies members (leave as is unless you run a test instance)."
+  maskid_key_id:
+    default: "cdde5c8d68dbb162"
+    description: "The Mask.ID platform key id to pin (production: cdde5c8d68dbb162). Responses signed by any other key are rejected."
+  maskid_public_key:
+    default: ""
+    description: "Optional: the base64url Ed25519 public key. Leave blank to fetch it once from <host>/.well-known/maskid-attest-key and pin it."
+  maskid_trust_level_trusted:
+    default: 2
+    min: 0
+    max: 4
+    description: "Minimum trust level granted to a member whose Mask.ID tier is Trusted."
+  maskid_trust_level_building:
+    default: 1
+    min: 0
+    max: 4
+    description: "Minimum trust level granted to a member whose Mask.ID tier is Building."
+  maskid_trust_level_low:
+    default: 0
+    min: 0
+    max: 4
+    description: "Minimum trust level granted to a member whose Mask.ID tier is Low."
+  maskid_refresh_days:
+    default: 1
+    min: 1
+    max: 30
+    description: "How often to re-read a linked member's current tier from Mask.ID. A revoked or deleted Mask.ID unlinks on the next refresh."
+  maskid_show_poster_icon:
+    default: true
+    client: true
+    description: "Show the Mask.ID tier icon next to a linked member's name on their posts."

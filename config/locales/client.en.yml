@@ -1,0 +1,18 @@
+en:
+  js:
+    maskid:
+      link: "Link my Mask.ID"
+      link_hint: "Prove you're an established person. Mask.ID shares only a tier — never your name, email, or wallet."
+      unlink: "Unlink Mask.ID"
+      tier:
+        trusted: "Mask.ID · Trusted"
+        building: "Mask.ID · Building"
+        low: "Mask.ID · Low"
+        unproven: "Mask.ID · New"
+      poster_icon:
+        trusted: "Verified Mask.ID — Trusted tier"
+        building: "Verified Mask.ID — Building tier"
+        low: "Verified Mask.ID — Low tier"
+    admin_js:
+      site_settings:
+        maskid_enabled: "Enable the Mask.ID plugin (badge, poster icon, trust-level floor by tier)."
