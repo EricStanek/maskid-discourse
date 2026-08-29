@@ -6,5 +6,3 @@ Maskid::Engine.routes.draw do
   post "/webhook" => "link#webhook"
   delete "/unlink" => "link#unlink"
 end
-
-Discourse::Application.routes.draw { mount ::Maskid::Engine, at: "maskid" }

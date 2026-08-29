@@ -28,6 +28,10 @@ end
 require_relative "lib/maskid/engine"
 
 after_initialize do
+  # Mount the engine the way core plugins do: appended into the main route
+  # set when it loads (a file-level routes.draw gets clobbered).
+  Discourse::Application.routes.append { mount ::Maskid::Engine, at: "/maskid" }
+
   # lib/ is on the engine's autoload path — Maskid::Key, ::Attestation,
   # ::Badges, ::Apply load on first reference (no require_relative, or they
   # load twice and warn).
