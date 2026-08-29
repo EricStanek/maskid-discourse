@@ -28,10 +28,9 @@ end
 require_relative "lib/maskid/engine"
 
 after_initialize do
-  require_relative "lib/maskid/key"
-  require_relative "lib/maskid/attestation"
-  require_relative "lib/maskid/badges"
-  require_relative "lib/maskid/apply"
+  # lib/ is on the engine's autoload path — Maskid::Key, ::Attestation,
+  # ::Badges, ::Apply load on first reference (no require_relative, or they
+  # load twice and warn).
 
   # Custom fields: typed, and the tier is public so it can ride on posts and
   # user cards. The subject id stays private (it is the site's own
