@@ -32,6 +32,9 @@ maskid:
     min: 1
     max: 30
     description: "How often to re-read a linked member's current tier from Mask.ID. A revoked or deleted Mask.ID unlinks on the next refresh."
+  maskid_report_sessions:
+    default: true
+    description: "Report a linked member's sign-ins to Mask.ID as daily activity counts (never which site, never what they did). Feeds the cross-site activity signal."
   maskid_show_poster_icon:
     default: true
     client: true

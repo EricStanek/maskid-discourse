@@ -8,6 +8,7 @@ en:
     maskid_trust_level_building: "Minimum trust level granted to a member whose Mask.ID tier is Building."
     maskid_trust_level_low: "Minimum trust level granted to a member whose Mask.ID tier is Low."
     maskid_refresh_days: "How often to re-read a linked member's current tier from Mask.ID. A revoked or deleted Mask.ID unlinks on the next refresh."
+    maskid_report_sessions: "Report a linked member's sign-ins to Mask.ID as daily activity counts (never which site, never what they did). Feeds the cross-site activity signal."
     maskid_show_poster_icon: "Show the Mask.ID tier icon next to a linked member's name on their posts."
   maskid:
     linked: "Your Mask.ID is linked (tier: %{tier})."

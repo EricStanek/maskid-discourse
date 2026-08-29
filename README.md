@@ -54,6 +54,7 @@ self-hosted instances install anything.
 | `maskid trust level low` | 0 | floor for the Low tier |
 | `maskid refresh days` | 1 | how often a linked member's tier is re-read |
 | `maskid show poster icon` | on | tier icon beside the name on posts |
+| `maskid report sessions` | on | report a linked member's sign-ins to Mask.ID as a daily activity count — a number, never which site |
 | `maskid host` | `https://app.mask.id` | only change for a test instance |
 | `maskid key id` / `maskid public key` | prod key / fetched | the pinned platform key |
 
@@ -69,7 +70,10 @@ self-hosted instances install anything.
    The plugin verifies one Ed25519 signature over the raw payload bytes
    against the pinned key, checks the nonce (ours, unused), the user, and the
    host, then stores the tier.
-4. Every `maskid refresh days`, a scheduled job re-reads
+4. When a linked member signs in, the plugin reports one `session` per day
+   to Mask.ID's write-back endpoint (counts only). Other sites then see
+   "active on N sites", never which. Turn off with `maskid report sessions`.
+5. Every `maskid refresh days`, a scheduled job re-reads
    `GET /api/attest/v1/subject/<code>`; a 404 unlinks.
 
 Your forum's host must be reachable over HTTPS for the webhook; the redirect

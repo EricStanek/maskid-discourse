@@ -84,3 +84,30 @@ RSpec.describe Maskid::Attestation do
     expect(user.trust_level).to eq(2)
   end
 end
+
+RSpec.describe Maskid::Report do
+  fab!(:user)
+
+  before do
+    SiteSetting.maskid_enabled = true
+    SiteSetting.maskid_host = "https://app.example"
+    user.custom_fields[Maskid::SUBJECT_FIELD] = "msub_test_subject"
+    user.save_custom_fields(true)
+  end
+
+  it "posts one session per day and remembers it" do
+    stub = stub_request(:post, "https://app.example/api/attest/v1/subject/msub_test_subject/events")
+      .with { |req| JSON.parse(req.body)["event"] == "session" }
+      .to_return(status: 204)
+    described_class.session!(user)
+    described_class.session!(user.reload)
+    expect(stub).to have_been_requested.once
+  end
+
+  it "does nothing for an unlinked member or when reporting is off" do
+    stub = stub_request(:post, %r{/events}).to_return(status: 204)
+    SiteSetting.maskid_report_sessions = false
+    described_class.session!(user)
+    expect(stub).not_to have_been_requested
+  end
+end

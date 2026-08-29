@@ -21,6 +21,7 @@ module ::Maskid
   INDEX_FIELD = "maskid_trust_index"
   VERIFIED_AT_FIELD = "maskid_verified_at"
   CHECKED_AT_FIELD = "maskid_checked_at"
+  REPORTED_AT_FIELD = "maskid_reported_at"
 
   TIERS = %w[trusted building low unproven].freeze
 end
@@ -44,6 +45,7 @@ after_initialize do
   register_user_custom_field_type(Maskid::INDEX_FIELD, :integer)
   register_user_custom_field_type(Maskid::VERIFIED_AT_FIELD, :string)
   register_user_custom_field_type(Maskid::CHECKED_AT_FIELD, :string)
+  register_user_custom_field_type(Maskid::REPORTED_AT_FIELD, :string)
   allow_public_user_custom_field(Maskid::TIER_FIELD)
   allow_public_user_custom_field(Maskid::INDEX_FIELD)
 
@@ -58,6 +60,12 @@ after_initialize do
   end
   add_to_serializer(:current_user, :maskid_trust_index) do
     object.custom_fields[Maskid::INDEX_FIELD]
+  end
+
+  # Write-back: a linked member signing in = one "session" report per day
+  # (counts only; Mask.ID never learns which site).
+  on(:user_logged_in) do |user|
+    Maskid::Report.session!(user) if SiteSetting.maskid_enabled
   end
 
   # Make sure the badges exist once the plugin is on.
