@@ -9,8 +9,10 @@ export default apiInitializer("1.8.0", (api) => {
     return;
   }
 
-  api.addPosterIcon((_cfs, attrs) => {
-    const tier = attrs.maskid_tier;
+  api.addPosterIcons((cfs, attrs) => {
+    // `cfs` = the poster's PUBLIC custom fields (maskid_tier is one);
+    // the post serializer attribute is the fallback.
+    const tier = (cfs && cfs.maskid_tier) || attrs.maskid_tier;
     if (!tier || tier === "unproven") {
       return;
     }

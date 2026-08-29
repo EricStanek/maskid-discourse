@@ -13,7 +13,7 @@ module ::Maskid
 
     def self.ensure!
       group = BadgeGrouping.find_by(name: "Mask.ID") ||
-        BadgeGrouping.create!(name: "Mask.ID", description: "Verified Mask.ID standing", position: 99)
+        BadgeGrouping.create!(name: "Mask.ID", position: 99)
 
       NAMES.each do |tier, name|
         next if Badge.exists?(name: name)

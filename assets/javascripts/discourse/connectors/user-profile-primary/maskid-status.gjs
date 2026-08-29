@@ -1,10 +1,11 @@
 import Component from "@glimmer/component";
-import { service } from "@ember/service";
-import { action } from "@ember/object";
 import { tracked } from "@glimmer/tracking";
+import { on } from "@ember/modifier";
+import { action } from "@ember/object";
+import { service } from "@ember/service";
 import { ajax } from "discourse/lib/ajax";
+import dIcon from "discourse/ui-kit/helpers/d-icon";
 import { i18n } from "discourse-i18n";
-import icon from "discourse/helpers/d-icon";
 
 // On a member's profile: their Mask.ID tier (public), and — on your OWN
 // profile — the "Link my Mask.ID" / "Unlink" controls.
@@ -29,6 +30,10 @@ export default class MaskidStatus extends Component {
     return this.siteSettings.maskid_enabled;
   }
 
+  get tierLabel() {
+    return i18n(`maskid.tier.${this.tier}`);
+  }
+
   @action
   async unlink() {
     this.busy = true;
@@ -45,8 +50,8 @@ export default class MaskidStatus extends Component {
       <div class="maskid-status">
         {{#if this.tier}}
           <span class="maskid-chip maskid-tier-{{this.tier}}">
-            {{icon "shield-halved"}}
-            {{i18n (concat "maskid.tier." this.tier)}}
+            {{dIcon "shield-halved"}}
+            {{this.tierLabel}}
           </span>
         {{/if}}
         {{#if this.own}}
@@ -59,7 +64,7 @@ export default class MaskidStatus extends Component {
             >{{i18n "maskid.unlink"}}</button>
           {{else}}
             <a class="btn btn-primary btn-small maskid-link" href="/maskid/start">
-              {{icon "shield-halved"}}
+              {{dIcon "shield-halved"}}
               {{i18n "maskid.link"}}
             </a>
             <p class="maskid-hint">{{i18n "maskid.link_hint"}}</p>

@@ -35,9 +35,10 @@ module ::Maskid
     # one the admin expects (default: the production key).
     def self.fetch_and_cache
       url = "#{SiteSetting.maskid_host.chomp("/")}/.well-known/maskid-attest-key"
-      body = FinalDestination::HTTP.get(URI(url), read_timeout: 6) rescue nil
-      body ||= Net::HTTP.get(URI(url))
-      json = JSON.parse(body)
+      uri = URI(url)
+      res = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https", open_timeout: 6, read_timeout: 6) { |h| h.get(uri.request_uri) }
+      return nil unless res.code.to_i == 200
+      json = JSON.parse(res.body)
       return nil unless json["alg"] == "ed25519" && json["key_id"] == SiteSetting.maskid_key_id
       PluginStore.set(PLUGIN_NAME, STORE_KEY, json["public_key"])
       json["public_key"]
