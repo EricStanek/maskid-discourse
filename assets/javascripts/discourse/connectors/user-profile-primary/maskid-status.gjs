@@ -34,6 +34,13 @@ export default class MaskidStatus extends Component {
     return i18n(`maskid.tier.${this.tier}`);
   }
 
+  // A full navigation — Ember would otherwise treat the anchor as an
+  // in-app route and never hit the server.
+  @action
+  start() {
+    window.location.assign("/maskid/start");
+  }
+
   @action
   async unlink() {
     this.busy = true;
@@ -63,10 +70,14 @@ export default class MaskidStatus extends Component {
               {{on "click" this.unlink}}
             >{{i18n "maskid.unlink"}}</button>
           {{else}}
-            <a class="btn btn-primary btn-small maskid-link" href="/maskid/start">
+            <button
+              type="button"
+              class="btn btn-primary btn-small maskid-link"
+              {{on "click" this.start}}
+            >
               {{dIcon "shield-halved"}}
               {{i18n "maskid.link"}}
-            </a>
+            </button>
             <p class="maskid-hint">{{i18n "maskid.link_hint"}}</p>
           {{/if}}
         {{/if}}
