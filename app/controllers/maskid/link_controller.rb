@@ -4,6 +4,11 @@ module ::Maskid
   class LinkController < ::ApplicationController
     requires_plugin PLUGIN_NAME
     requires_login except: [:webhook]
+    # These are plain browser navigations (start/return) and a server-to-
+    # server POST (webhook), not Ember XHRs — without this, Discourse's
+    # check_xhr renders the app shell before the action runs.
+    skip_before_action :check_xhr
+    skip_before_action :preload_json, only: [:webhook]
     skip_before_action :verify_authenticity_token, only: [:webhook]
     skip_before_action :redirect_to_login_if_required, only: [:webhook]
 
