@@ -2,7 +2,7 @@
 
 # name: maskid
 # about: Let members prove they are an established Mask.ID identity — badge, poster icon, and a starting trust level by tier. No email, no phone, no personal data.
-# version: 0.2.0
+# version: 0.3.0
 # authors: Mask.ID
 # url: https://mask.id/works-with
 # required_version: 3.3.0

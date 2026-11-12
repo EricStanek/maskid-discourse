@@ -19,7 +19,8 @@ module ::Maskid
       base = Discourse.base_url
       request = {
         v: 1,
-        rp_user_id: "u_#{current_user.id}",
+        # A throwaway reference, never the forum's user id (see Attestation).
+        rp_user_id: Attestation.ref_for(nonce),
         nonce: nonce,
         redirect: "#{base}/maskid/return",
         expires: (Time.now + Attestation::NONCE_TTL).to_i,

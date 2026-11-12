@@ -17,7 +17,9 @@ else. The plugin then:
   member's tier periodically so a tier change moves the badge.
 
 What your forum never receives: the member's Mask.ID username, wallet
-address, referral graph, or any profile content. The reference code is
+address, referral graph, or any profile content. And what Mask.ID never
+receives: the member's forum user id or username — the plugin sends a
+throwaway reference in its place. The reference code is
 meaningless on any other site. See the
 [integration guide](https://app.mask.id/api) for the exact contract.
 

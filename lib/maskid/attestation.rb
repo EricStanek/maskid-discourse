@@ -10,19 +10,34 @@ module ::Maskid
     Result = Struct.new(:ok, :error, :payload, :user_id, keyword_init: true)
 
     # ---- nonces: minted at /start, consumed exactly once -------------------
+    # Each nonce carries a throwaway reference (`ref`). That reference, not
+    # the forum's user id, is what Mask.ID is told as the account
+    # (`rp_user_id`) — so Mask.ID never holds an identifier for the member
+    # on this forum. Only this row maps it back, for 15 minutes.
     def self.mint_nonce!(user)
       nonce = SecureRandom.hex(12)
-      PluginStore.set(PLUGIN_NAME, "nonce:#{nonce}", { "user_id" => user.id, "at" => Time.now.to_i })
+      PluginStore.set(
+        PLUGIN_NAME,
+        "nonce:#{nonce}",
+        { "user_id" => user.id, "ref" => "r_#{SecureRandom.urlsafe_base64(9)}", "at" => Time.now.to_i },
+      )
       nonce
     end
 
+    # The reference minted with `nonce` (nil once spent or unknown).
+    def self.ref_for(nonce)
+      row = PluginStore.get(PLUGIN_NAME, "nonce:#{nonce}")
+      row && row["ref"]
+    end
+
+    # Spend the nonce: returns its row ({"user_id", "ref"}) exactly once.
     def self.take_nonce!(nonce)
       return nil if nonce.blank?
       row = PluginStore.get(PLUGIN_NAME, "nonce:#{nonce}")
       return nil if row.nil?
       PluginStore.remove(PLUGIN_NAME, "nonce:#{nonce}")
       return nil if Time.now.to_i - row["at"].to_i > NONCE_TTL
-      row["user_id"]
+      row
     end
 
     # ---- verify ------------------------------------------------------------
@@ -36,10 +51,11 @@ module ::Maskid
       payload = opened.payload
       return fail("payload") unless payload["type"] == "maskid.attestation"
 
-      user_id = take_nonce!(payload["nonce"])
-      return fail("nonce") if user_id.nil?
+      row = take_nonce!(payload["nonce"])
+      return fail("nonce") if row.nil?
+      user_id = row["user_id"]
       return fail("user") if expect_user && expect_user.id != user_id
-      return fail("rp_user_id") unless payload["rp_user_id"] == "u_#{user_id}"
+      return fail("rp_user_id") if row["ref"].blank? || payload["rp_user_id"] != row["ref"]
 
       Result.new(ok: true, payload: payload, user_id: user_id)
     end

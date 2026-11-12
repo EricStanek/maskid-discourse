@@ -22,7 +22,10 @@ RSpec.describe Maskid::LinkController do
     expect(uri.host).to eq(URI(SiteSetting.maskid_host).host)
     c = Rack::Utils.parse_query(uri.query)["c"]
     req = JSON.parse(Base64.urlsafe_decode64(c + "=" * ((4 - c.length % 4) % 4)))
-    expect(req["rp_user_id"]).to eq("u_#{user.id}")
+    # Mask.ID is told a throwaway reference, never the forum's user id.
+    expect(req["rp_user_id"]).to match(/\Ar_[\w-]{12}\z/)
+    expect(req["rp_user_id"]).to eq(Maskid::Attestation.ref_for(req["nonce"]))
+    expect(req.to_json).not_to include("u_#{user.id}")
     expect(req["redirect"]).to end_with("/maskid/return")
     # webhook only on https forums (test base_url is http)
     expect(req["webhook"]).to be_nil

@@ -24,7 +24,7 @@ RSpec.describe Maskid::Attestation do
   def payload_for(nonce, overrides = {})
     {
       v: 1, type: "maskid.attestation", key_id: key_id, subject_id: "msub_abc",
-      rp_host: Discourse.current_hostname, rp_user_id: "u_#{user.id}", nonce: nonce,
+      rp_host: Discourse.current_hostname, rp_user_id: described_class.ref_for(nonce), nonce: nonce,
       scopes: ["trust_index"], trust_index: 72, trust_index_tier: "building",
       issued_at: Time.now.utc.iso8601,
     }.merge(overrides)
@@ -56,6 +56,12 @@ RSpec.describe Maskid::Attestation do
   it "rejects a response for a different user than the nonce's" do
     nonce = described_class.mint_nonce!(user)
     p, s = signed(payload_for(nonce, rp_user_id: "u_999999"))
+    expect(described_class.verify(p, s).error).to eq("rp_user_id")
+  end
+
+  it "no longer accepts the forum's user id as the account" do
+    nonce = described_class.mint_nonce!(user)
+    p, s = signed(payload_for(nonce, rp_user_id: "u_#{user.id}"))
     expect(described_class.verify(p, s).error).to eq("rp_user_id")
   end
 
