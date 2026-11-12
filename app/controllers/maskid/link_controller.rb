@@ -49,8 +49,18 @@ module ::Maskid
 
     # Webhook mode: Mask.ID POSTs {payload, signature, key_id}. No session —
     # the single-use nonce binds the response to the user who started it.
+    # The same address also receives revocation notices (no nonce): the
+    # member revoked this forum or deleted their Mask.ID.
     def webhook
       body = JSON.parse(request.raw_post) rescue {}
+      notice = Attestation.revocation(body["payload"], body["signature"], key_id: body["key_id"])
+      if notice.ok
+        # 503 = our re-read failed; Mask.ID retries the notice later. An
+        # unknown subject is still a 200 — there is nothing here to undo.
+        outcome = Apply.revoked!(notice.payload["subject_id"])
+        return render json: { ok: outcome != :error }, status: (outcome == :error ? 503 : 200)
+      end
+
       result = Attestation.verify(body["payload"], body["signature"], key_id: body["key_id"])
       if result.ok
         user = User.find_by(id: result.user_id)

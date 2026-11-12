@@ -45,24 +45,42 @@ module ::Maskid
     end
 
     # Re-read the subject endpoint; 404 = revoked/deleted → unlink.
+    # Returns :linked, :unlinked, or :error (nothing changed; try again later).
     def self.refresh!(user)
       subject = user.custom_fields[SUBJECT_FIELD]
-      return if subject.blank?
+      return :unlinked if subject.blank?
       url = "#{SiteSetting.maskid_host.chomp("/")}/api/attest/v1/subject/#{subject}"
       res = Net::HTTP.get_response(URI(url))
       case res.code.to_i
       when 200
         body = JSON.parse(res.body)
         bytes = Base64.urlsafe_decode64(Key.pad(body["payload"]))
-        return unless Key.verify?(bytes, body["signature"])
+        return :error unless Key.verify?(bytes, body["signature"])
         payload = JSON.parse(bytes)
-        return unless payload["subject_id"] == subject
+        return :error unless payload["subject_id"] == subject
         link!(user, payload)
+        :linked
       when 404
         unlink!(user)
+        :unlinked
+      else
+        :error
       end
     rescue StandardError => e
       Rails.logger.warn("maskid: refresh failed for user #{user.id}: #{e.message}")
+      :error
+    end
+
+    # A revocation notice named this subject. The notice is only a prompt:
+    # re-read the subject and let the 404 unlink, so a stale or replayed
+    # notice can never unlink a member who has since linked again.
+    # Returns :error when the re-read failed, so the caller can ask Mask.ID
+    # to send the notice again.
+    def self.revoked!(subject_id)
+      field = UserCustomField.find_by(name: SUBJECT_FIELD, value: subject_id)
+      user = field && User.find_by(id: field.user_id)
+      return :unknown if user.nil?
+      refresh!(user)
     end
   end
 end

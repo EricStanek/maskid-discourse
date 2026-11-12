@@ -12,8 +12,9 @@ else. The plugin then:
 - grants a **trust-level floor by tier** — e.g. a Trusted Mask.ID starts at
   TL2 instead of serving the new-user restrictions — never a ceiling, and
   never touching staff or manually locked levels;
-- **re-reads** each linked member's tier periodically, so a revoked or
-  deleted Mask.ID unlinks and a tier change moves the badge.
+- **unlinks at once** when a member revokes your forum or deletes their
+  Mask.ID (Mask.ID notifies the webhook), and **re-reads** each linked
+  member's tier periodically so a tier change moves the badge.
 
 What your forum never receives: the member's Mask.ID username, wallet
 address, referral graph, or any profile content. The reference code is
@@ -75,6 +76,12 @@ self-hosted instances install anything.
    "active on N sites", never which. Turn off with `maskid report sessions`.
 5. Every `maskid refresh days`, a scheduled job re-reads
    `GET /api/attest/v1/subject/<code>`; a 404 unlinks.
+6. When a member revokes your forum on Mask.ID, or deletes their Mask.ID,
+   Mask.ID POSTs a signed revocation notice to `/maskid/webhook`. The plugin
+   checks the signature, then re-reads that member straight away and unlinks
+   on the 404 — the badge and icon go within moments, not at the next
+   refresh. HTTPS forums only (that is when a webhook is registered); the
+   scheduled re-read covers everyone else.
 
 Your forum's host must be reachable over HTTPS for the webhook; the redirect
 path works on its own (including on a local dev instance).

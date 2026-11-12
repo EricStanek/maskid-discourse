@@ -65,6 +65,35 @@ RSpec.describe Maskid::Attestation do
     expect(described_class.verify(p, s).error).to eq("key_id")
   end
 
+  describe "revocation notices" do
+    def notice(overrides = {})
+      signed({
+        v: 1, type: "maskid.revocation", key_id: key_id, subject_id: "msub_abc",
+        rp_host: Discourse.current_hostname, revoked_at: Time.now.utc.iso8601,
+      }.merge(overrides))
+    end
+
+    it "accepts a signed notice for this forum" do
+      r = described_class.revocation(*notice)
+      expect(r.ok).to eq(true)
+      expect(r.payload["subject_id"]).to eq("msub_abc")
+    end
+
+    it "is not mistaken for an attestation, nor an attestation for a notice" do
+      expect(described_class.verify(*notice).error).to eq("payload")
+      p, s = signed(payload_for(described_class.mint_nonce!(user)))
+      expect(described_class.revocation(p, s).error).to eq("payload")
+    end
+
+    it "rejects a forged, foreign or wrong-key notice" do
+      p, s = notice
+      forged = Base64.urlsafe_encode64({ type: "maskid.revocation", subject_id: "msub_abc" }.to_json, padding: false)
+      expect(described_class.revocation(forged, s).error).to eq("signature")
+      expect(described_class.revocation(*notice(rp_host: "other.example")).error).to eq("host")
+      expect(described_class.revocation(*notice(key_id: "deadbeefdeadbeef")).error).to eq("key_id")
+    end
+  end
+
   it "links the user: fields, badge, trust-level floor" do
     SiteSetting.maskid_trust_level_building = 2
     nonce = described_class.mint_nonce!(user)

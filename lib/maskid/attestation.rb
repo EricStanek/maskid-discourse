@@ -31,6 +31,34 @@ module ::Maskid
     # match the nonce's user; the webhook has no session, so the nonce alone
     # binds the response to the user.
     def self.verify(payload_b64, signature_b64, key_id: nil, expect_user: nil)
+      opened = open(payload_b64, signature_b64, key_id: key_id)
+      return opened unless opened.ok
+      payload = opened.payload
+      return fail("payload") unless payload["type"] == "maskid.attestation"
+
+      user_id = take_nonce!(payload["nonce"])
+      return fail("nonce") if user_id.nil?
+      return fail("user") if expect_user && expect_user.id != user_id
+      return fail("rp_user_id") unless payload["rp_user_id"] == "u_#{user_id}"
+
+      Result.new(ok: true, payload: payload, user_id: user_id)
+    end
+
+    # A revocation notice (spec §5): Mask.ID POSTs it to the webhook when the
+    # member revokes this forum or deletes their Mask.ID. Same signed body as
+    # an attestation, but no nonce — nobody here started anything. Returns
+    # ok + the payload only for a genuine notice addressed to this forum.
+    def self.revocation(payload_b64, signature_b64, key_id: nil)
+      opened = open(payload_b64, signature_b64, key_id: key_id)
+      return opened unless opened.ok
+      return fail("payload") unless opened.payload["type"] == "maskid.revocation"
+      return fail("subject") if opened.payload["subject_id"].blank?
+      opened
+    end
+
+    # The checks every signed body shares: signature over the raw BYTES
+    # first, then parse; our pinned key; addressed to this forum.
+    def self.open(payload_b64, signature_b64, key_id: nil)
       return fail("missing") if payload_b64.blank? || signature_b64.blank?
       return fail("key_id") if key_id.present? && key_id != SiteSetting.maskid_key_id
 
@@ -39,16 +67,11 @@ module ::Maskid
       return fail("signature") unless Key.verify?(bytes, signature_b64)
 
       payload = JSON.parse(bytes) rescue nil
-      return fail("payload") unless payload.is_a?(Hash) && payload["type"] == "maskid.attestation"
+      return fail("payload") unless payload.is_a?(Hash)
       return fail("key_id") if payload["key_id"] != SiteSetting.maskid_key_id
       return fail("host") unless host_ok?(payload["rp_host"])
 
-      user_id = take_nonce!(payload["nonce"])
-      return fail("nonce") if user_id.nil?
-      return fail("user") if expect_user && expect_user.id != user_id
-      return fail("rp_user_id") unless payload["rp_user_id"] == "u_#{user_id}"
-
-      Result.new(ok: true, payload: payload, user_id: user_id)
+      Result.new(ok: true, payload: payload)
     end
 
     def self.host_ok?(rp_host)
